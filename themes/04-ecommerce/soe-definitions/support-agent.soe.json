@@ -1,0 +1,97 @@
+{
+  "agentId": "support-agent",
+  "version": "1.0.0",
+  "description": "Customer support agent that can read order history, customer profiles (name, email), and return policies. Strictly prohibited from accessing raw payment card data, full SSNs, or authentication credentials.",
+  "complianceFrameworks": ["pci-dss", "ccpa", "gdpr"],
+  "identity": {
+    "role": "CustomerSupport",
+    "allowedPersonas": ["support-agent"],
+    "authorityLevel": "read-customer-limited",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "orders/history/**",
+      "orders/status/**",
+      "customers/profiles/**",
+      "customers/preferences/**",
+      "shipping/tracking/**",
+      "policies/returns/**",
+      "policies/warranty/**",
+      "knowledge-base/**"
+    ],
+    "readDeny": [
+      "**/card-data*",
+      "**/pan-mapping*",
+      "**/cvv*",
+      "**/payment-tokens/**",
+      "payment-vault/**",
+      "**/ssn*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "production/db/**"
+    ],
+    "writeAllow": [
+      "support-tickets/**",
+      "support-responses/**",
+      "customers/notes/**"
+    ],
+    "writeDeny": [
+      "orders/**",
+      "payments/**",
+      "customers/profiles/**",
+      "exports/payment*",
+      "exports/customer-pii*",
+      "**/credentials*",
+      "**/.env*",
+      "production/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_order_history",
+      "read_customer_profile",
+      "read_return_policy",
+      "create_support_ticket",
+      "send_response"
+    ],
+    "denied": [
+      "access_payment_vault",
+      "read_card_data",
+      "export_customer_data",
+      "modify_order",
+      "process_refund"
+    ],
+    "bash": {
+      "allow": [
+        "cat orders/history/**",
+        "cat shipping/tracking/**",
+        "python support_lookup*"
+      ],
+      "deny": [
+        "curl *payment-vault*",
+        "curl *pan-lookup*",
+        "psql *payment*",
+        "mysql *payment*",
+        "python *export_payment*",
+        "python *dump_cards*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

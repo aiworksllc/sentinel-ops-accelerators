@@ -1,0 +1,89 @@
+{
+  "agentId": "pricing-agent",
+  "version": "1.0.0",
+  "description": "Pricing optimization agent that can read product catalogs and competitor data, adjust individual prices within a 20% band, but is strictly prohibited from bulk price manipulation, setting prices below cost, or modifying pricing rule engines.",
+  "complianceFrameworks": ["ftc-consumer-protection", "state-price-gouging"],
+  "identity": {
+    "role": "PricingOptimizer",
+    "allowedPersonas": ["pricing-agent"],
+    "authorityLevel": "price-adjust-limited",
+    "environmentScope": ["production"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "catalog/products/**",
+      "catalog/categories/**",
+      "competitor-pricing/**",
+      "margin-thresholds/**",
+      "pricing-history/**",
+      "analytics/sales/**"
+    ],
+    "readDeny": [
+      "**/card-data*",
+      "**/payment*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "customer-data/pii/**",
+      "orders/raw/**",
+      "**/api-key*"
+    ],
+    "writeAllow": [
+      "catalog/products/*/price.json",
+      "pricing-history/**",
+      "pricing-reports/**"
+    ],
+    "writeDeny": [
+      "pricing-rules/engine/**",
+      "pricing-rules/floors/**",
+      "catalog/products/bulk-update*",
+      "production/db/**",
+      "**/credentials*",
+      "**/.env*",
+      "orders/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_product_catalog",
+      "read_competitor_prices",
+      "update_single_price",
+      "generate_pricing_report"
+    ],
+    "denied": [
+      "bulk_update_prices",
+      "modify_pricing_rules",
+      "set_price_below_cost",
+      "access_payment_data"
+    ],
+    "bash": {
+      "allow": [
+        "python pricing_analyzer*",
+        "python margin_calculator*",
+        "cat catalog/products/**",
+        "cat competitor-pricing/**"
+      ],
+      "deny": [
+        "UPDATE *products* SET price*",
+        "python *bulk_price*",
+        "python *mass_reprice*",
+        "curl *pricing-api*/bulk*",
+        "psql *production*",
+        "mysql *production*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

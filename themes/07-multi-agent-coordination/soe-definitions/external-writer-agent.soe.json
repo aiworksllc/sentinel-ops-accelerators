@@ -1,0 +1,90 @@
+{
+  "agentId": "external-writer-agent",
+  "version": "1.0.0",
+  "description": "Agent with external write/API access but restricted internal read access. Cannot read customer or financial data directly. Used in UC-46 to demonstrate how receiving sensitive data from data-reader-agent creates a cross-agent data flow violation detectable by Beacon.",
+  "complianceFrameworks": ["gdpr", "ccpa", "sox"],
+  "identity": {
+    "role": "IntegrationEngineer",
+    "allowedPersonas": ["external-writer-agent"],
+    "authorityLevel": "write-external",
+    "environmentScope": ["production"],
+    "dataClassification": "internal",
+    "teamId": "platform-alpha"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "configs/integrations/**",
+      "data/public/**",
+      "data/reports/summary/**",
+      "templates/**",
+      "docs/api/**"
+    ],
+    "readDeny": [
+      "data/customers/**",
+      "data/financial/**",
+      "data/pii/**",
+      "**/.env*",
+      "**/credentials*",
+      "**/secrets*",
+      "**/api-key*",
+      "soe-definitions/**"
+    ],
+    "writeAllow": [
+      "outbound/api-payloads/**",
+      "outbound/webhooks/**",
+      "data/public/**",
+      "logs/integration/**"
+    ],
+    "writeDeny": [
+      "data/customers/**",
+      "data/financial/**",
+      "production/db/**",
+      "soe-definitions/**",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_file",
+      "write_file",
+      "send_webhook",
+      "api_call"
+    ],
+    "denied": [
+      "read_customer_data",
+      "read_financial_data",
+      "deploy",
+      "modify_soe"
+    ],
+    "bash": {
+      "allow": [
+        "curl -X POST https://partner-api.example.com/**",
+        "curl -X PUT https://partner-api.example.com/**",
+        "cat configs/integrations/**",
+        "cat templates/**",
+        "node outbound/**"
+      ],
+      "deny": [
+        "curl * -d @data/customers/**",
+        "curl * -d @data/financial/**",
+        "curl * -d @data/pii/**",
+        "cat data/customers/**",
+        "cat data/financial/**",
+        "sudo *",
+        "rm -rf *",
+        "eval *",
+        "psql *",
+        "mysql *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 8,
+      "throttle": 14,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

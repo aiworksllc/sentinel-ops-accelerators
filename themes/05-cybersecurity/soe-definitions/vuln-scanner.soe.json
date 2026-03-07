@@ -1,0 +1,98 @@
+{
+  "agentId": "vuln-scanner",
+  "version": "1.0.0",
+  "description": "Vulnerability assessment agent that can run non-destructive scans in authorized test environments and read CVE databases. Strictly prohibited from executing exploits, scanning production systems, or accessing classified penetration test reports.",
+  "complianceFrameworks": ["nist-csf", "soc2", "iso-27001"],
+  "identity": {
+    "role": "VulnerabilityAssessor",
+    "allowedPersonas": ["vuln-scanner"],
+    "authorityLevel": "scan-test-only",
+    "environmentScope": ["test", "sandbox"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "scan-targets/authorized/**",
+      "cve-database/**",
+      "scan-results/**",
+      "vulnerability-reports/draft/**",
+      "scan-history/**",
+      "nist-nvd/**"
+    ],
+    "readDeny": [
+      "**/exploit-modules/**",
+      "**/pentest-classified/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "production/configs/**",
+      "**/password*"
+    ],
+    "writeAllow": [
+      "scan-results/**",
+      "vulnerability-reports/draft/**",
+      "scan-history/**"
+    ],
+    "writeDeny": [
+      "production/**",
+      "scan-targets/authorized/**",
+      "**/credentials*",
+      "**/.env*",
+      "firewall-rules/**",
+      "network/configs/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "run_vulnerability_scan",
+      "read_cve_database",
+      "generate_scan_report",
+      "check_scan_history"
+    ],
+    "denied": [
+      "execute_exploit",
+      "run_production_scan",
+      "modify_firewall",
+      "access_pentest_classified",
+      "run_dos_test"
+    ],
+    "bash": {
+      "allow": [
+        "nmap -sV *test*",
+        "nmap -sS *sandbox*",
+        "python vuln_scan*",
+        "cat cve-database/**",
+        "cat scan-results/**",
+        "nikto *test*"
+      ],
+      "deny": [
+        "msfconsole *exploit*",
+        "msfconsole *payload*",
+        "metasploit *",
+        "sqlmap *prod*",
+        "sqlmap *production*",
+        "*dos-test* *prod*",
+        "*ddos* *",
+        "nmap * *prod*",
+        "nmap * *production*",
+        "hydra *",
+        "john *",
+        "hashcat *",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

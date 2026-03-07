@@ -1,0 +1,93 @@
+{
+  "agentId": "marketing-agent",
+  "version": "1.0.0",
+  "description": "Marketing automation agent that can read subscriber segments, campaign performance, and product catalogs. Can send to verified active subscriber lists only. Strictly prohibited from accessing suppression lists or sending to unsubscribed users.",
+  "complianceFrameworks": ["can-spam", "gdpr", "ccpa"],
+  "identity": {
+    "role": "MarketingAutomation",
+    "allowedPersonas": ["marketing-agent"],
+    "authorityLevel": "marketing-send-verified",
+    "environmentScope": ["production"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "marketing/segments/active/**",
+      "marketing/campaigns/**",
+      "marketing/templates/**",
+      "analytics/campaigns/**",
+      "catalog/products/**",
+      "catalog/promotions/**"
+    ],
+    "readDeny": [
+      "**/suppression*",
+      "**/unsubscribe*",
+      "**/opt-out*",
+      "**/card-data*",
+      "**/payment*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "customer-data/pii/**",
+      "**/api-key*"
+    ],
+    "writeAllow": [
+      "marketing/campaigns/drafts/**",
+      "marketing/campaigns/scheduled/**",
+      "marketing/reports/**"
+    ],
+    "writeDeny": [
+      "suppression-lists/**",
+      "unsubscribe-lists/**",
+      "marketing/segments/master/**",
+      "customer-data/**",
+      "**/credentials*",
+      "**/.env*",
+      "production/db/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_subscriber_segment",
+      "read_campaign_performance",
+      "schedule_campaign",
+      "draft_email_content"
+    ],
+    "denied": [
+      "read_suppression_list",
+      "modify_suppression_list",
+      "send_to_unsubscribed",
+      "export_email_list",
+      "access_payment_data"
+    ],
+    "bash": {
+      "allow": [
+        "python campaign_analyzer*",
+        "python segment_builder*",
+        "cat marketing/campaigns/**",
+        "cat analytics/campaigns/**"
+      ],
+      "deny": [
+        "python *send_blast* *--list*unverified*",
+        "python *email_all*",
+        "python *export_emails*",
+        "curl *email-api*/send*--list*unverified*",
+        "curl *email-api*/blast*",
+        "psql *suppression*",
+        "mysql *suppression*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

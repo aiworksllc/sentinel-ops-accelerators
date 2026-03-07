@@ -1,0 +1,93 @@
+{
+  "agentId": "returns-agent",
+  "version": "1.0.0",
+  "description": "Returns processing agent that can read order details and return policies, issue refunds up to original order value. Strictly prohibited from issuing refunds exceeding order value, processing bulk refunds, or modifying refund policy configurations.",
+  "complianceFrameworks": ["ftc-consumer-protection", "reg-e-efta", "pci-dss"],
+  "identity": {
+    "role": "ReturnsProcessor",
+    "allowedPersonas": ["returns-agent"],
+    "authorityLevel": "refund-up-to-order-value",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "orders/details/**",
+      "orders/history/**",
+      "returns/requests/**",
+      "returns/history/**",
+      "policies/refund/**",
+      "policies/returns/**",
+      "shipping/return-labels/**"
+    ],
+    "readDeny": [
+      "**/card-data*",
+      "**/pan-mapping*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "customer-data/pii/**",
+      "**/api-key*",
+      "**/password*"
+    ],
+    "writeAllow": [
+      "returns/processed/**",
+      "returns/approved/**",
+      "refunds/pending/**",
+      "returns/labels/**"
+    ],
+    "writeDeny": [
+      "policies/refund/**",
+      "policies/returns/**",
+      "refunds/bulk/**",
+      "orders/production/**",
+      "**/credentials*",
+      "**/.env*",
+      "payments/config/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_order_details",
+      "read_return_policy",
+      "issue_refund_standard",
+      "generate_return_label",
+      "approve_return"
+    ],
+    "denied": [
+      "issue_refund_over_value",
+      "bulk_refund",
+      "modify_refund_policy",
+      "access_payment_vault",
+      "override_refund_cap"
+    ],
+    "bash": {
+      "allow": [
+        "python process_return*",
+        "python generate_label*",
+        "cat orders/details/**",
+        "cat returns/**"
+      ],
+      "deny": [
+        "*bulk*refund*",
+        "python *mass_refund*",
+        "python *override_cap*",
+        "curl *refund-api*/bulk*",
+        "psql *production*",
+        "mysql *production*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

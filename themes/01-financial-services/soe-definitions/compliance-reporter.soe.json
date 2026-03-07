@@ -1,0 +1,81 @@
+{
+  "agentId": "compliance-reporter",
+  "version": "1.0.0",
+  "description": "Compliance reporting agent with strictly read-only access to audit logs, compliance reports, and regulations. Cannot modify, delete, or overwrite any audit trail data. Ensures audit trail immutability as required by SEC, FINRA, and SOX.",
+  "complianceFrameworks": ["sox", "sec-finra", "dodd-frank"],
+  "identity": {
+    "role": "ComplianceOfficer",
+    "allowedPersonas": ["compliance-reporter"],
+    "authorityLevel": "read-only",
+    "environmentScope": ["production"],
+    "dataClassification": "restricted"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "audit-logs/**",
+      "audit-logs/soe-events/**",
+      "audit-logs/trade-history/**",
+      "audit-logs/access-logs/**",
+      "compliance-reports/**",
+      "compliance-reports/quarterly/**",
+      "compliance-reports/annual/**",
+      "regulations/**",
+      "regulations/sec/**",
+      "regulations/finra/**",
+      "policies/**",
+      "risk-assessments/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "**/private-key*"
+    ],
+    "writeAllow": [],
+    "writeDeny": [
+      "**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_audit_log",
+      "search_compliance_reports",
+      "query_regulations",
+      "generate_compliance_summary"
+    ],
+    "denied": [
+      "edit_audit_log",
+      "delete_record",
+      "modify_compliance_report",
+      "override_violation",
+      "write_policy",
+      "execute_trade"
+    ],
+    "bash": {
+      "allow": [],
+      "deny": [
+        "rm *",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "truncate *",
+        "mv *audit*",
+        "> *",
+        "curl * -X DELETE*",
+        "curl * -X POST*",
+        "curl * -X PUT*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

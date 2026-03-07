@@ -1,0 +1,88 @@
+{
+  "agentId": "recon-probe-agent",
+  "version": "1.0.0",
+  "description": "Agent with limited read access used in UC-47 to demonstrate coordinated reconnaissance detection. When three instances of this agent type independently probe the same restricted resource within 60 seconds, Beacon flags it as coordinated reconnaissance even though each individual probe is a simple denied read.",
+  "complianceFrameworks": ["nist-csf", "mitre-attack"],
+  "identity": {
+    "role": "ResearchAssistant",
+    "allowedPersonas": ["recon-probe-agent"],
+    "authorityLevel": "read-public",
+    "environmentScope": ["development"],
+    "dataClassification": "public",
+    "teamId": "research-team"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "docs/**",
+      "data/public/**",
+      "research/**"
+    ],
+    "readDeny": [
+      "data/customers/**",
+      "data/financial/**",
+      "data/pii/**",
+      "infrastructure/**",
+      "deploy/**",
+      "production/**",
+      "admin/**",
+      "**/.env*",
+      "**/credentials*",
+      "**/secrets*",
+      "**/api-key*",
+      "soe-definitions/**"
+    ],
+    "writeAllow": [
+      "research/output/**"
+    ],
+    "writeDeny": [
+      "production/**",
+      "infrastructure/**",
+      "deploy/**",
+      "admin/**",
+      "soe-definitions/**",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_file",
+      "write_file",
+      "search_docs"
+    ],
+    "denied": [
+      "deploy",
+      "admin_override",
+      "modify_soe",
+      "access_production"
+    ],
+    "bash": {
+      "allow": [
+        "cat docs/**",
+        "cat data/public/**",
+        "grep * docs/**",
+        "grep * research/**"
+      ],
+      "deny": [
+        "curl *",
+        "wget *",
+        "sudo *",
+        "rm -rf *",
+        "eval *",
+        "docker *",
+        "kubectl *",
+        "nmap *",
+        "dig *",
+        "nslookup *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 15,
+    "thresholds": {
+      "warn": 6,
+      "throttle": 10,
+      "critical": 13,
+      "exhausted": 15
+    }
+  }
+}

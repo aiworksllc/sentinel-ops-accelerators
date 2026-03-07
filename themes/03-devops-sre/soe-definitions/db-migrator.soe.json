@@ -1,0 +1,101 @@
+{
+  "agentId": "db-migrator",
+  "version": "1.0.0",
+  "description": "Database migration agent that can run schema migrations in staging/UAT and read migration scripts. Strictly prohibited from executing destructive DDL in production or accessing production connection strings.",
+  "complianceFrameworks": ["soc2", "iso27001", "nist-800-53"],
+  "identity": {
+    "role": "DatabaseEngineer",
+    "allowedPersonas": ["db-migrator"],
+    "authorityLevel": "migrate-staging-only",
+    "environmentScope": ["development", "staging", "uat"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "migrations/**",
+      "migrations/scripts/**",
+      "migrations/rollback/**",
+      "database/schemas/**",
+      "database/seeds/staging/**",
+      "database/configs/staging/**",
+      "database/configs/uat/**"
+    ],
+    "readDeny": [
+      "production/db/**",
+      "database/configs/prod/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/password*",
+      "**/connection-string*prod*",
+      "customer-data/**",
+      "**/pii/**"
+    ],
+    "writeAllow": [
+      "migrations/scripts/**",
+      "migrations/rollback/**",
+      "database/schemas/staging/**",
+      "database/schemas/uat/**"
+    ],
+    "writeDeny": [
+      "production/**",
+      "database/schemas/prod/**",
+      "database/configs/prod/**",
+      "**/credentials*",
+      "**/.env*",
+      "customer-data/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "run_migration_staging",
+      "validate_sql",
+      "read_schema",
+      "generate_rollback"
+    ],
+    "denied": [
+      "run_migration_prod",
+      "drop_table_prod",
+      "truncate_prod",
+      "delete_data_prod"
+    ],
+    "bash": {
+      "allow": [
+        "psql *staging* -f migrations/*",
+        "psql *uat* -f migrations/*",
+        "psql *staging* -c \"SELECT*\"",
+        "psql *staging* -c \"ALTER TABLE*\"",
+        "psql *staging* -c \"CREATE*\"",
+        "psql *uat* -c \"SELECT*\"",
+        "python manage.py migrate --database staging*",
+        "python manage.py migrate --database uat*",
+        "cat migrations/**",
+        "cat database/schemas/**"
+      ],
+      "deny": [
+        "psql *production* -c \"DROP TABLE*\"",
+        "psql *production* -c \"DROP DATABASE*\"",
+        "psql *production* -c \"TRUNCATE*\"",
+        "psql *production* -c \"DELETE FROM*\"",
+        "psql *production* -c \"ALTER TABLE*DROP*\"",
+        "psql *prod* -c \"DROP*\"",
+        "psql *prod* -c \"TRUNCATE*\"",
+        "mysql *production* -e \"DROP*\"",
+        "mysql *production* -e \"TRUNCATE*\"",
+        "python manage.py migrate --database prod*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

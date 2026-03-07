@@ -1,0 +1,87 @@
+{
+  "agentId": "loan-processor",
+  "version": "1.0.0",
+  "description": "Loan underwriting agent that processes applications and writes decisions, but cannot access raw SSNs, credit score source files, or make external API calls that could leak applicant data.",
+  "complianceFrameworks": ["glba", "ecoa", "fcra"],
+  "identity": {
+    "role": "LoanUnderwriter",
+    "allowedPersonas": ["loan-processor"],
+    "authorityLevel": "underwrite-uat",
+    "environmentScope": ["uat"],
+    "dataClassification": "restricted"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "applications/**",
+      "applications/pending/**",
+      "applications/metadata/**",
+      "policy-docs/**",
+      "underwriting-rules/**",
+      "risk-models/**"
+    ],
+    "readDeny": [
+      "**/*ssn*",
+      "**/*social-security*",
+      "**/*credit-score-raw*",
+      "**/*tax-return*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/bank-statements/raw/**",
+      "**/pii-vault/**"
+    ],
+    "writeAllow": [
+      "decisions/**",
+      "decisions/approved/**",
+      "decisions/denied/**",
+      "underwriting-notes/**"
+    ],
+    "writeDeny": [
+      "applications/**",
+      "**/credentials*",
+      "**/.env*",
+      "customer-records/**",
+      "pii-vault/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_application",
+      "write_decision",
+      "calculate_dti_ratio",
+      "check_underwriting_rules"
+    ],
+    "denied": [
+      "access_raw_ssn",
+      "export_credit_scores",
+      "modify_application",
+      "delete_records",
+      "transfer_data_external"
+    ],
+    "bash": {
+      "allow": [
+        "python underwrite*",
+        "python risk_model*",
+        "node scoring-engine*"
+      ],
+      "deny": [
+        "curl *",
+        "wget *",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "scp *",
+        "rsync *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 25,
+    "thresholds": {
+      "warn": 12,
+      "throttle": 18,
+      "critical": 22,
+      "exhausted": 25
+    }
+  }
+}

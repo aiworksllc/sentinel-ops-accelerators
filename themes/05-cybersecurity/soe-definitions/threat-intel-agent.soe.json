@@ -1,0 +1,96 @@
+{
+  "agentId": "threat-intel-agent",
+  "version": "1.0.0",
+  "description": "Threat intelligence analyst agent that can read threat feeds, analyze IOCs internally, and write internal threat reports. Strictly prohibited from transmitting classified IOCs externally, accessing TLP:RED intelligence beyond clearance, or modifying threat classification levels.",
+  "complianceFrameworks": ["nist-csf", "mitre-attack", "tlp-protocol", "iso-27001"],
+  "identity": {
+    "role": "ThreatAnalyst",
+    "allowedPersonas": ["threat-intel-agent"],
+    "authorityLevel": "analyze-internal-only",
+    "environmentScope": ["production"],
+    "dataClassification": "secret"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "threat-feeds/**",
+      "threat-intel/iocs/**",
+      "threat-intel/reports/internal/**",
+      "threat-intel/tlp-green/**",
+      "threat-intel/tlp-white/**",
+      "telemetry/internal/**",
+      "threat-intel/advisories/**"
+    ],
+    "readDeny": [
+      "**/tlp-red/**",
+      "**/tlp-amber-strict/**",
+      "**/classified/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "hr/personnel/**"
+    ],
+    "writeAllow": [
+      "threat-intel/reports/internal/**",
+      "threat-intel/analysis/**",
+      "threat-intel/correlations/**"
+    ],
+    "writeDeny": [
+      "threat-intel/classifications/**",
+      "threat-intel/tlp-assignments/**",
+      "threat-intel/iocs/master/**",
+      "threat-feeds/config/**",
+      "**/credentials*",
+      "**/.env*",
+      "exports/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_threat_feed",
+      "analyze_ioc",
+      "correlate_indicators",
+      "write_threat_report",
+      "read_advisory"
+    ],
+    "denied": [
+      "export_classified_iocs",
+      "transmit_external",
+      "modify_classification",
+      "access_tlp_red",
+      "share_externally"
+    ],
+    "bash": {
+      "allow": [
+        "python ioc_analyzer*",
+        "python threat_correlator*",
+        "cat threat-feeds/**",
+        "cat threat-intel/iocs/**",
+        "python stix_parser*"
+      ],
+      "deny": [
+        "curl *external*",
+        "curl * -X POST *threat-share*",
+        "curl * -X POST *taxii*",
+        "curl * -X POST *misp*external*",
+        "python *export_iocs*",
+        "python *share_external*",
+        "scp *threat-intel*",
+        "rsync *threat-intel* *external*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

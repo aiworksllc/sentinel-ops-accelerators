@@ -1,0 +1,100 @@
+{
+  "agentId": "cicd-agent",
+  "version": "1.0.0",
+  "description": "CI/CD pipeline agent that can trigger builds, run tests, and read pipeline configs. Strictly prohibited from modifying branch protections, force-pushing to protected branches, or accessing deployment secrets.",
+  "complianceFrameworks": ["soc2", "nist-800-53", "cis-controls"],
+  "identity": {
+    "role": "PipelineOperator",
+    "allowedPersonas": ["cicd-agent"],
+    "authorityLevel": "build-and-test",
+    "environmentScope": ["development", "uat", "ci"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "pipelines/**",
+      "ci-configs/**",
+      ".github/workflows/**",
+      "build-artifacts/**",
+      "test-results/**",
+      "src/**",
+      "tests/**"
+    ],
+    "readDeny": [
+      "**/deploy-secrets/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "**/private-key*",
+      "**/signing-key*",
+      "production/**"
+    ],
+    "writeAllow": [
+      "build-artifacts/**",
+      "test-results/**",
+      "ci-configs/feature-*/**"
+    ],
+    "writeDeny": [
+      ".github/workflows/main*",
+      ".github/branch-protection*",
+      "**/deploy-secrets/**",
+      "**/credentials*",
+      "**/.env*",
+      "production/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "trigger_build",
+      "run_tests",
+      "read_pipeline_config",
+      "check_build_status"
+    ],
+    "denied": [
+      "modify_branch_protection",
+      "force_push",
+      "delete_branch",
+      "access_deploy_secrets"
+    ],
+    "bash": {
+      "allow": [
+        "npm test *",
+        "npm run build *",
+        "pytest *",
+        "go test *",
+        "git push origin feature/*",
+        "git push origin dev",
+        "docker build *",
+        "docker push *-uat*",
+        "cat pipelines/**",
+        "cat ci-configs/**"
+      ],
+      "deny": [
+        "curl *api.github.com*/branches/*/protection*",
+        "curl *api.github.com* -X DELETE*",
+        "curl *api.github.com* -X PUT *protection*",
+        "git push --force *main*",
+        "git push --force *master*",
+        "git push -f *main*",
+        "git push -f *master*",
+        "git push --force-with-lease *main*",
+        "git branch -D main",
+        "git branch -D master",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

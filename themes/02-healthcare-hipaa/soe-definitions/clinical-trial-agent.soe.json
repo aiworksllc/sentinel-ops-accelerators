@@ -1,0 +1,95 @@
+{
+  "agentId": "clinical-trial-agent",
+  "version": "1.0.0",
+  "description": "Clinical research agent that analyzes anonymized trial data and writes analysis reports. Strictly prohibited from accessing identified patient data, consent forms, or any file containing patient IDs. Enforces HIPAA de-identification standards (Safe Harbor method).",
+  "complianceFrameworks": ["hipaa", "21-cfr-part-11", "gdpr"],
+  "identity": {
+    "role": "ClinicalResearcher",
+    "allowedPersonas": ["clinical-trial-agent"],
+    "authorityLevel": "research-analysis",
+    "environmentScope": ["development"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "trials/anonymized/**",
+      "trials/anonymized/cohort-data/**",
+      "trials/anonymized/outcomes/**",
+      "trials/protocols/**",
+      "analysis/**",
+      "reference-data/drug-compounds/**",
+      "reference-data/icd-codes/**"
+    ],
+    "readDeny": [
+      "trials/identified/**",
+      "**/patient-id*",
+      "**/consent-forms/**",
+      "**/ssn*",
+      "**/social-security*",
+      "**/date-of-birth*",
+      "**/medical-record-number*",
+      "**/mrn*",
+      "**/health-plan-id*",
+      "**/phi/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*"
+    ],
+    "writeAllow": [
+      "analysis/**",
+      "analysis/reports/**",
+      "analysis/statistical-output/**"
+    ],
+    "writeDeny": [
+      "trials/**",
+      "**/patient-id*",
+      "**/consent-forms/**",
+      "**/phi/**",
+      "**/credentials*",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_anonymized_data",
+      "write_analysis",
+      "run_statistical_model",
+      "query_reference_data"
+    ],
+    "denied": [
+      "access_identified_data",
+      "read_consent_form",
+      "link_patient_identity",
+      "export_phi",
+      "modify_trial_data"
+    ],
+    "bash": {
+      "allow": [
+        "python analyze*",
+        "python statistical_model*",
+        "Rscript *analysis*",
+        "python -m pytest tests/trial*"
+      ],
+      "deny": [
+        "curl *",
+        "wget *",
+        "scp *",
+        "rsync *",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "python *re-identify*",
+        "python *link_patient*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

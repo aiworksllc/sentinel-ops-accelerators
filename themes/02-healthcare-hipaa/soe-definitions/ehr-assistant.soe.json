@@ -1,0 +1,76 @@
+{
+  "agentId": "ehr-assistant",
+  "version": "1.0.0",
+  "description": "Electronic Health Record analysis assistant with read-only access to aggregated summaries and de-identified demographics. Strictly prohibited from accessing PHI, SSNs, raw diagnoses, or insurance identifiers. Enforces HIPAA Privacy Rule minimum necessary standard.",
+  "complianceFrameworks": ["hipaa", "hitech"],
+  "identity": {
+    "role": "DataAnalyst",
+    "allowedPersonas": ["ehr-assistant"],
+    "authorityLevel": "read-only",
+    "environmentScope": ["uat"],
+    "dataClassification": "restricted"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "summaries/**",
+      "summaries/population-health/**",
+      "summaries/quality-metrics/**",
+      "demographics/age-group/**",
+      "demographics/zip3/**",
+      "reference-data/**"
+    ],
+    "readDeny": [
+      "**/phi/**",
+      "**/ssn*",
+      "**/social-security*",
+      "**/diagnosis-raw*",
+      "**/insurance-id*",
+      "**/health-plan-id*",
+      "**/patient-name*",
+      "**/date-of-birth*",
+      "**/medical-record-number*",
+      "**/mrn*",
+      "**/address/**",
+      "**/phone*",
+      "**/email*",
+      "**/biometric*",
+      "**/photo*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*"
+    ],
+    "writeAllow": [],
+    "writeDeny": [
+      "**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_summary",
+      "read_demographics",
+      "query_reference_data"
+    ],
+    "denied": [
+      "access_phi",
+      "read_patient_record",
+      "export_data",
+      "modify_record",
+      "write_any_file"
+    ],
+    "bash": {
+      "allow": [],
+      "deny": [
+        "*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 15,
+    "thresholds": {
+      "warn": 7,
+      "throttle": 11,
+      "critical": 13,
+      "exhausted": 15
+    }
+  }
+}

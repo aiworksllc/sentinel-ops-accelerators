@@ -1,0 +1,92 @@
+{
+  "agentId": "scheduler-agent",
+  "version": "1.0.0",
+  "description": "Appointment scheduling agent with limited operational authority. Can read provider availability, write appointments, and run scheduling optimization. Strictly blocked from accessing billing, insurance, salary data, or any financial systems.",
+  "complianceFrameworks": ["hipaa"],
+  "identity": {
+    "role": "SchedulingAssistant",
+    "allowedPersonas": ["scheduler-agent"],
+    "authorityLevel": "limited-ops",
+    "environmentScope": ["production"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "availability/**",
+      "availability/providers/**",
+      "availability/rooms/**",
+      "availability/equipment/**",
+      "appointments/schedule/**",
+      "clinic-config/hours/**",
+      "clinic-config/departments/**"
+    ],
+    "readDeny": [
+      "billing/**",
+      "insurance/**",
+      "**/salary*",
+      "**/compensation*",
+      "**/ssn*",
+      "**/phi/clinical/**",
+      "**/diagnosis*",
+      "**/treatment-plan*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "hr/**"
+    ],
+    "writeAllow": [
+      "appointments/**",
+      "appointments/scheduled/**",
+      "appointments/rescheduled/**",
+      "appointments/cancelled/**"
+    ],
+    "writeDeny": [
+      "billing/**",
+      "insurance/**",
+      "hr/**",
+      "**/credentials*",
+      "**/.env*",
+      "clinic-config/**",
+      "availability/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_availability",
+      "write_appointment",
+      "cancel_appointment",
+      "reschedule_appointment",
+      "run_optimizer"
+    ],
+    "denied": [
+      "access_billing",
+      "read_insurance",
+      "modify_availability",
+      "access_hr_records",
+      "read_salary_data"
+    ],
+    "bash": {
+      "allow": [
+        "node schedule-optimizer*",
+        "node availability-checker*"
+      ],
+      "deny": [
+        "curl *",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "psql *billing*",
+        "mysql *billing*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

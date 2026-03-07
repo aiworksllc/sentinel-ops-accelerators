@@ -1,0 +1,91 @@
+{
+  "agentId": "monitoring-agent",
+  "version": "1.0.0",
+  "description": "SRE monitoring agent that can read metrics, acknowledge non-critical alerts, and create dashboards. Strictly prohibited from silencing critical alerts, deleting alert rules, or modifying escalation policies.",
+  "complianceFrameworks": ["soc2", "iso27001", "nist-800-53"],
+  "identity": {
+    "role": "SREMonitor",
+    "allowedPersonas": ["monitoring-agent"],
+    "authorityLevel": "observe-and-acknowledge",
+    "environmentScope": ["production", "uat", "development"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "monitoring/metrics/**",
+      "monitoring/dashboards/**",
+      "monitoring/alerts/active/**",
+      "monitoring/alerts/history/**",
+      "monitoring/runbooks/**",
+      "logs/application/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "**/private-key*",
+      "production/db/**",
+      "customer-data/**"
+    ],
+    "writeAllow": [
+      "monitoring/dashboards/**",
+      "monitoring/alerts/acknowledged/**",
+      "monitoring/reports/**"
+    ],
+    "writeDeny": [
+      "monitoring/alerts/rules/**",
+      "monitoring/escalation-policies/**",
+      "monitoring/alerts/silenced/**",
+      "**/credentials*",
+      "**/.env*",
+      "production/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_metrics",
+      "acknowledge_alert",
+      "create_dashboard",
+      "query_logs"
+    ],
+    "denied": [
+      "silence_critical_alert",
+      "delete_alert_rule",
+      "modify_escalation_policy",
+      "suppress_notification"
+    ],
+    "bash": {
+      "allow": [
+        "curl *prometheus*/api/v1/query*",
+        "curl *grafana*/api/dashboards*",
+        "curl *-X POST *alertmanager*/api/v1/alerts*ack*",
+        "cat monitoring/**",
+        "cat logs/application/**"
+      ],
+      "deny": [
+        "curl *-X POST *alertmanager*/api/v2/silences*",
+        "curl *-X PUT *alertmanager*/silences*critical*",
+        "curl *-X PUT *alertmanager*/silences*",
+        "curl *-X DELETE *alertmanager*/rules*",
+        "curl *-X DELETE *alertmanager*/alerts*",
+        "curl *-X PUT *pagerduty*/escalation*",
+        "curl *-X DELETE *pagerduty*",
+        "curl *-X PUT *opsgenie*/policies*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

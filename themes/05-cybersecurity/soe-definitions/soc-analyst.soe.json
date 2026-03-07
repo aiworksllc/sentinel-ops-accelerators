@@ -1,0 +1,104 @@
+{
+  "agentId": "soc-analyst",
+  "version": "1.0.0",
+  "description": "SOC analyst agent that can read security dashboards, SIEM data, and network flow logs, and write SOC shift reports and ticket updates. Strictly prohibited from modifying firewall rules, disabling IDS/IPS systems, or altering network segmentation.",
+  "complianceFrameworks": ["nist-csf", "soc2", "pci-dss", "iso-27001"],
+  "identity": {
+    "role": "SOCOperator",
+    "allowedPersonas": ["soc-analyst"],
+    "authorityLevel": "monitor-report-only",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "siem/dashboards/**",
+      "siem/alerts/**",
+      "siem/data/**",
+      "network/flows/**",
+      "soc/shift-reports/**",
+      "soc/tickets/**",
+      "soc/runbooks/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "**/password*",
+      "hr/personnel/**",
+      "legal/privileged/**"
+    ],
+    "writeAllow": [
+      "soc/shift-reports/**",
+      "soc/tickets/**",
+      "soc/notes/**"
+    ],
+    "writeDeny": [
+      "firewall-rules/**",
+      "network/segmentation/**",
+      "network/configs/**",
+      "ids/config/**",
+      "ips/config/**",
+      "siem/rules/**",
+      "siem/config/**",
+      "**/credentials*",
+      "**/.env*",
+      "production/configs/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_security_dashboard",
+      "read_siem_alerts",
+      "read_network_flows",
+      "write_shift_report",
+      "update_ticket"
+    ],
+    "denied": [
+      "modify_firewall_rules",
+      "disable_ids",
+      "disable_ips",
+      "modify_network_segmentation",
+      "modify_siem_config"
+    ],
+    "bash": {
+      "allow": [
+        "cat siem/alerts/**",
+        "cat network/flows/**",
+        "python soc_dashboard*",
+        "python alert_analyzer*",
+        "cat soc/runbooks/**"
+      ],
+      "deny": [
+        "iptables *ACCEPT*",
+        "iptables -F*",
+        "iptables -P *ACCEPT*",
+        "*firewall*allow*all*",
+        "*firewall*disable*",
+        "ufw disable*",
+        "ufw allow *",
+        "systemctl stop *ids*",
+        "systemctl stop *ips*",
+        "systemctl disable *ids*",
+        "*snort*stop*",
+        "*suricata*stop*",
+        "python *modify_segmentation*",
+        "ip route *",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

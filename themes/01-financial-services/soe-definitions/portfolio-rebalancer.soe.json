@@ -1,0 +1,90 @@
+{
+  "agentId": "portfolio-rebalancer",
+  "version": "1.0.0",
+  "description": "Portfolio management agent scoped to dev/uat environments only. Can read portfolio data, write rebalance proposals, and run optimization scripts, but is strictly blocked from any production environment access.",
+  "complianceFrameworks": ["sec-finra", "erisa"],
+  "identity": {
+    "role": "PortfolioManager",
+    "allowedPersonas": ["portfolio-rebalancer"],
+    "authorityLevel": "propose-only",
+    "environmentScope": ["development", "uat"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "portfolios/**",
+      "portfolios/holdings/**",
+      "portfolios/allocations/**",
+      "market-data/indices/**",
+      "risk-parameters/**",
+      "benchmark-data/**"
+    ],
+    "readDeny": [
+      "production/**",
+      "production/credentials/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "customer-pii/**",
+      "**/ssn*"
+    ],
+    "writeAllow": [
+      "rebalance-proposals/**",
+      "rebalance-proposals/drafts/**",
+      "optimization-reports/**"
+    ],
+    "writeDeny": [
+      "production/**",
+      "production/trades/**",
+      "production/orders/**",
+      "portfolios/**",
+      "**/credentials*",
+      "**/.env*",
+      "executions/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_portfolio",
+      "write_proposal",
+      "run_optimization",
+      "calculate_allocation"
+    ],
+    "denied": [
+      "execute_trade",
+      "submit_order",
+      "access_production",
+      "modify_holdings",
+      "transfer_funds"
+    ],
+    "bash": {
+      "allow": [
+        "python optimize*",
+        "python allocation_model*",
+        "python -m pytest tests/portfolio*",
+        "node rebalance-calculator*"
+      ],
+      "deny": [
+        "curl *production*",
+        "curl *prod-api*",
+        "psql *production*",
+        "mysql *production*",
+        "ssh *prod*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

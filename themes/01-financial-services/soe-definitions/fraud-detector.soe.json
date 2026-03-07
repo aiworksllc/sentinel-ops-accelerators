@@ -1,0 +1,68 @@
+{
+  "agentId": "fraud-detector",
+  "version": "1.0.0",
+  "description": "Fraud analysis agent with strictly read-only authority. Can analyze transaction logs and alert patterns but cannot write alerts, modify configs, or run any bash commands. All suspicious activity must be escalated to human reviewers.",
+  "complianceFrameworks": ["pci-dss", "bsa-aml"],
+  "identity": {
+    "role": "FraudAnalyst",
+    "allowedPersonas": ["fraud-detector"],
+    "authorityLevel": "read-only",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "transactions/**",
+      "transactions/logs/**",
+      "transactions/summaries/**",
+      "alerts/history/**",
+      "alerts/patterns/**",
+      "fraud-rules/**",
+      "watchlists/hashed/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "**/ssn*",
+      "**/account-number*",
+      "customer-pii/**"
+    ],
+    "writeAllow": [],
+    "writeDeny": [
+      "**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_transaction_log",
+      "analyze_pattern",
+      "query_watchlist"
+    ],
+    "denied": [
+      "write_alert",
+      "modify_rule",
+      "delete_record",
+      "execute_command",
+      "block_account",
+      "freeze_transaction"
+    ],
+    "bash": {
+      "allow": [],
+      "deny": [
+        "*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 15,
+    "thresholds": {
+      "warn": 8,
+      "throttle": 11,
+      "critical": 13,
+      "exhausted": 15
+    }
+  }
+}

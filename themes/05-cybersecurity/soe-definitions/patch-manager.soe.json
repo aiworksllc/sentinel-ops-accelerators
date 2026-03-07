@@ -1,0 +1,93 @@
+{
+  "agentId": "patch-manager",
+  "version": "1.0.0",
+  "description": "Patch management coordinator agent that can read patch status, schedule patches for test environments, and write patch reports. Strictly prohibited from rolling back critical security patches, applying untested patches to production, or modifying CVE severity classifications.",
+  "complianceFrameworks": ["nist-csf", "cisa-bod-22-01", "soc2", "iso-27001"],
+  "identity": {
+    "role": "PatchCoordinator",
+    "allowedPersonas": ["patch-manager"],
+    "authorityLevel": "patch-test-schedule",
+    "environmentScope": ["test", "staging"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "patch-management/status/**",
+      "patch-management/queue/**",
+      "patch-management/history/**",
+      "cve-database/**",
+      "patch-management/reports/**",
+      "patch-management/approvals/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "production/configs/**",
+      "**/password*"
+    ],
+    "writeAllow": [
+      "patch-management/schedules/test/**",
+      "patch-management/schedules/staging/**",
+      "patch-management/reports/**"
+    ],
+    "writeDeny": [
+      "patch-management/classifications/**",
+      "patch-management/severity/**",
+      "patch-management/schedules/production/**",
+      "production/**",
+      "**/credentials*",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_patch_status",
+      "schedule_test_patch",
+      "generate_patch_report",
+      "check_cve_database",
+      "read_approval_queue"
+    ],
+    "denied": [
+      "rollback_critical_patch",
+      "force_production_patch",
+      "modify_severity_classification",
+      "bypass_approval",
+      "skip_test_phase"
+    ],
+    "bash": {
+      "allow": [
+        "python patch_status*",
+        "python patch_report*",
+        "apt list --upgradable *test*",
+        "yum check-update *test*",
+        "cat patch-management/**"
+      ],
+      "deny": [
+        "*rollback*critical*",
+        "*rollback*security*",
+        "apt *remove*security*",
+        "yum *remove*security*",
+        "apt *downgrade*",
+        "*patch*--target*prod*--force*",
+        "*patch*--skip-approval*",
+        "apt *install* *--target*prod*",
+        "yum *install* *--target*prod*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

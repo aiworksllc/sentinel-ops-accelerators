@@ -1,0 +1,92 @@
+{
+  "agentId": "inventory-agent",
+  "version": "1.0.0",
+  "description": "Inventory management agent that can read stock levels and warehouse data, write stock updates to staging, but is strictly prohibited from writing to production order databases or modifying fulfillment pipeline configurations.",
+  "complianceFrameworks": ["sox-compliance", "pci-dss"],
+  "identity": {
+    "role": "InventoryManager",
+    "allowedPersonas": ["inventory-agent"],
+    "authorityLevel": "inventory-staging-write",
+    "environmentScope": ["staging", "development"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "inventory/stock-levels/**",
+      "inventory/reorder-thresholds/**",
+      "warehouse/capacity/**",
+      "warehouse/locations/**",
+      "suppliers/catalogs/**",
+      "analytics/inventory/**"
+    ],
+    "readDeny": [
+      "**/card-data*",
+      "**/payment*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "customer-data/**",
+      "orders/payment-details/**",
+      "**/api-key*"
+    ],
+    "writeAllow": [
+      "inventory/staging/**",
+      "inventory/stock-updates/**",
+      "reports/inventory/**",
+      "warehouse/staging/**"
+    ],
+    "writeDeny": [
+      "orders/production/**",
+      "fulfillment/pipeline/**",
+      "fulfillment/workflows/**",
+      "production/**",
+      "**/credentials*",
+      "**/.env*",
+      "payments/**",
+      "customer-data/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_stock_levels",
+      "update_staging_inventory",
+      "generate_restock_report",
+      "check_warehouse_capacity"
+    ],
+    "denied": [
+      "write_production_orders",
+      "modify_fulfillment_pipeline",
+      "run_production_migration",
+      "access_payment_data"
+    ],
+    "bash": {
+      "allow": [
+        "python inventory_check*",
+        "python restock_report*",
+        "cat inventory/**",
+        "cat warehouse/**"
+      ],
+      "deny": [
+        "psql *prod*orders*",
+        "mysql *prod*orders*",
+        "psql *production*",
+        "mysql *production*",
+        "*migrate*production*",
+        "python *fulfillment_config*",
+        "curl *prod*order*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

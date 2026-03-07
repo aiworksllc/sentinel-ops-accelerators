@@ -1,0 +1,76 @@
+{
+  "agentId": "drug-checker",
+  "version": "1.0.0",
+  "description": "Pharmacy advisory agent that checks drug interactions and reads formulary data. Advisory-only authority -- can write interaction reports but cannot modify formulary data, run system commands, or access patient medication histories.",
+  "complianceFrameworks": ["hipaa", "fda-21-cfr-11"],
+  "identity": {
+    "role": "PharmacyAdvisor",
+    "allowedPersonas": ["drug-checker"],
+    "authorityLevel": "advisory-only",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "formulary/**",
+      "formulary/approved-drugs/**",
+      "formulary/dosage-guidelines/**",
+      "interactions/**",
+      "interactions/contraindications/**",
+      "interactions/severity-matrix/**",
+      "reference-data/ndc-codes/**",
+      "reference-data/rxnorm/**"
+    ],
+    "readDeny": [
+      "**/patient-medications/**",
+      "**/prescription-history/**",
+      "**/phi/**",
+      "**/patient-name*",
+      "**/ssn*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*"
+    ],
+    "writeAllow": [
+      "interaction-reports/**",
+      "interaction-reports/advisories/**"
+    ],
+    "writeDeny": [
+      "formulary/**",
+      "interactions/**",
+      "**/phi/**",
+      "**/credentials*",
+      "**/.env*",
+      "system-config/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_formulary",
+      "check_interaction",
+      "write_advisory_report",
+      "query_drug_database"
+    ],
+    "denied": [
+      "modify_formulary",
+      "prescribe_medication",
+      "access_patient_history",
+      "execute_system_command"
+    ],
+    "bash": {
+      "allow": [],
+      "deny": [
+        "*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

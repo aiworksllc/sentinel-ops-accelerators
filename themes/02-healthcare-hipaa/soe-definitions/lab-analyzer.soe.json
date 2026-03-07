@@ -1,0 +1,89 @@
+{
+  "agentId": "lab-analyzer",
+  "version": "1.0.0",
+  "description": "Laboratory analysis agent that processes anonymized lab results and writes analysis reports. Cannot access identified patient results, patient names, or modify lab system configuration. Enforces HIPAA de-identification for lab data.",
+  "complianceFrameworks": ["hipaa", "clia", "cap"],
+  "identity": {
+    "role": "LabTechnician",
+    "allowedPersonas": ["lab-analyzer"],
+    "authorityLevel": "analyze-anonymized",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "lab-results/anonymized/**",
+      "lab-results/anonymized/hematology/**",
+      "lab-results/anonymized/chemistry/**",
+      "lab-results/anonymized/microbiology/**",
+      "reference-ranges/**",
+      "quality-control/**",
+      "instrument-calibration/**"
+    ],
+    "readDeny": [
+      "lab-results/identified/**",
+      "**/patient-name*",
+      "**/patient-id*",
+      "**/mrn*",
+      "**/medical-record-number*",
+      "**/ssn*",
+      "**/phi/**",
+      "**/ordering-physician*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*"
+    ],
+    "writeAllow": [
+      "analysis-reports/**",
+      "analysis-reports/anomaly-flags/**",
+      "analysis-reports/trend-analysis/**"
+    ],
+    "writeDeny": [
+      "lab-results/**",
+      "lab-config/**",
+      "instrument-calibration/**",
+      "**/phi/**",
+      "**/credentials*",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_anonymized_results",
+      "write_analysis_report",
+      "query_reference_ranges",
+      "flag_anomaly"
+    ],
+    "denied": [
+      "access_identified_results",
+      "modify_lab_results",
+      "change_calibration",
+      "access_patient_identity"
+    ],
+    "bash": {
+      "allow": [
+        "python analyze_lab*",
+        "python anomaly_detection*",
+        "python trend_analysis*",
+        "Rscript *lab_stats*"
+      ],
+      "deny": [
+        "curl *",
+        "wget *",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "python *re-identify*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

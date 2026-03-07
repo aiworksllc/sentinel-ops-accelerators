@@ -1,0 +1,101 @@
+{
+  "agentId": "incident-responder",
+  "version": "1.0.0",
+  "description": "Incident response agent that can read security logs, collect forensic artifacts, and write incident reports. Strictly prohibited from disabling security logging, modifying or deleting evidence, or altering SIEM correlation rules.",
+  "complianceFrameworks": ["nist-csf", "soc2", "iso-27001", "mitre-attack"],
+  "identity": {
+    "role": "IncidentHandler",
+    "allowedPersonas": ["incident-responder"],
+    "authorityLevel": "investigate-read-collect",
+    "environmentScope": ["production", "staging"],
+    "dataClassification": "restricted"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "siem/alerts/**",
+      "logs/security/**",
+      "logs/network/**",
+      "logs/auth/**",
+      "forensics/artifacts/**",
+      "playbooks/incident/**",
+      "network/flows/**",
+      "incident-reports/**"
+    ],
+    "readDeny": [
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "**/password*",
+      "hr/personnel/**",
+      "legal/privileged/**"
+    ],
+    "writeAllow": [
+      "incident-reports/**",
+      "forensics/collected/**",
+      "incident-timeline/**",
+      "forensics/preserved/**"
+    ],
+    "writeDeny": [
+      "siem/rules/**",
+      "siem/correlation/**",
+      "siem/config/**",
+      "logs/**",
+      "forensics/artifacts/**",
+      "firewall-rules/**",
+      "network/configs/**",
+      "**/credentials*",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_siem_alerts",
+      "collect_forensic_artifact",
+      "write_incident_report",
+      "read_network_flows",
+      "read_playbook"
+    ],
+    "denied": [
+      "disable_logging",
+      "modify_siem_rules",
+      "delete_logs",
+      "alter_evidence",
+      "modify_firewall"
+    ],
+    "bash": {
+      "allow": [
+        "cat logs/security/**",
+        "cat logs/network/**",
+        "tcpdump -r *",
+        "python collect_artifacts*",
+        "python timeline_builder*"
+      ],
+      "deny": [
+        "systemctl stop *log*",
+        "systemctl disable *log*",
+        "service *log* stop",
+        "service *syslog* stop",
+        "truncate *log*",
+        "> *log*",
+        "rm *log*",
+        "rm -rf *",
+        "shred *log*",
+        "systemctl stop *siem*",
+        "kill *syslog*",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

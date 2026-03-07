@@ -1,0 +1,97 @@
+{
+  "agentId": "research-agent",
+  "version": "1.0.0",
+  "description": "Agent with internet research access and ability to read/write research documents. Can fetch URLs and generate reports. Used in UC-48 (cross-agent supply chain via malicious config) and UC-49 (session boundary evasion) and UC-50 (compliant parts, non-compliant whole).",
+  "complianceFrameworks": ["soc2", "nist-csf"],
+  "identity": {
+    "role": "ResearchAnalyst",
+    "allowedPersonas": ["research-agent"],
+    "authorityLevel": "research-standard",
+    "environmentScope": ["development"],
+    "dataClassification": "internal",
+    "teamId": "research-team"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "research/**",
+      "docs/**",
+      "data/public/**",
+      "configs/app/**",
+      "templates/**"
+    ],
+    "readDeny": [
+      "data/customers/**",
+      "data/financial/**",
+      "data/pii/**",
+      "infrastructure/**",
+      "deploy/**",
+      "production/**",
+      "**/.env*",
+      "**/credentials*",
+      "**/secrets*",
+      "**/api-key*",
+      "soe-definitions/**"
+    ],
+    "writeAllow": [
+      "research/output/**",
+      "research/reports/**",
+      "configs/app/research-settings/**"
+    ],
+    "writeDeny": [
+      "deploy/**",
+      "infrastructure/**",
+      "production/**",
+      "data/customers/**",
+      "data/financial/**",
+      "soe-definitions/**",
+      "**/.env*",
+      "**/credentials*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_file",
+      "write_file",
+      "web_search",
+      "fetch_url",
+      "generate_report"
+    ],
+    "denied": [
+      "deploy",
+      "admin_override",
+      "modify_soe",
+      "access_production",
+      "modify_infrastructure"
+    ],
+    "bash": {
+      "allow": [
+        "curl -s https://**",
+        "python research/**",
+        "cat research/**",
+        "cat docs/**",
+        "grep * research/**",
+        "grep * docs/**"
+      ],
+      "deny": [
+        "curl -X POST *",
+        "curl -X PUT *",
+        "curl -X DELETE *",
+        "sudo *",
+        "rm -rf *",
+        "eval *",
+        "docker *",
+        "kubectl *",
+        "terraform *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 18,
+    "thresholds": {
+      "warn": 7,
+      "throttle": 12,
+      "critical": 16,
+      "exhausted": 18
+    }
+  }
+}

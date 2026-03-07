@@ -1,0 +1,90 @@
+{
+  "agentId": "data-reader-agent",
+  "version": "1.0.0",
+  "description": "Agent with broad internal read access including sensitive data (customer records, financial data). Has no write access to external systems and no bash command access. Used in UC-46 to demonstrate cross-agent data flow detection when this agent passes sensitive data to an externally-connected agent.",
+  "complianceFrameworks": ["gdpr", "ccpa", "sox"],
+  "identity": {
+    "role": "DataAnalyst",
+    "allowedPersonas": ["data-reader-agent"],
+    "authorityLevel": "read-internal",
+    "environmentScope": ["production"],
+    "dataClassification": "restricted",
+    "teamId": "platform-alpha"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "data/customers/**",
+      "data/financial/**",
+      "data/analytics/**",
+      "data/reports/**",
+      "data/inventory/**",
+      "configs/app/**",
+      "logs/app/**"
+    ],
+    "readDeny": [
+      "**/.env*",
+      "**/credentials*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/private-key*",
+      "infrastructure/**",
+      "deploy/**",
+      "soe-definitions/**"
+    ],
+    "writeAllow": [
+      "data/reports/**",
+      "data/analytics/output/**"
+    ],
+    "writeDeny": [
+      "data/customers/**",
+      "data/financial/**",
+      "production/**",
+      "external/**",
+      "outbound/**",
+      "soe-definitions/**",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_file",
+      "write_file",
+      "search_data",
+      "generate_report"
+    ],
+    "denied": [
+      "send_external",
+      "api_call",
+      "deploy",
+      "modify_soe"
+    ],
+    "bash": {
+      "allow": [
+        "cat data/**",
+        "grep * data/**",
+        "wc -l data/**",
+        "head -n * data/**",
+        "python data/analytics/**"
+      ],
+      "deny": [
+        "curl *",
+        "wget *",
+        "nc *",
+        "ssh *",
+        "scp *",
+        "sudo *",
+        "rm -rf *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 8,
+      "throttle": 14,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "agentId": "trading-bot",
+  "version": "1.0.0",
+  "description": "Algorithmic trading agent that can read market data and run backtests, but is strictly prohibited from executing live trades, accessing customer accounts, or reading production credentials.",
+  "complianceFrameworks": ["sec-finra", "mifid-ii"],
+  "identity": {
+    "role": "AlgorithmicTrader",
+    "allowedPersonas": ["trading-bot"],
+    "authorityLevel": "read-only-market",
+    "environmentScope": ["production"],
+    "dataClassification": "confidential"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "market-data/**",
+      "market-data/equities/**",
+      "market-data/options/**",
+      "market-data/forex/**",
+      "backtest-results/**",
+      "strategy-configs/**",
+      "research/quantitative/**"
+    ],
+    "readDeny": [
+      "customer-accounts/**",
+      "**/pii/**",
+      "**/ssn*",
+      "**/account-number*",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "production/db/**",
+      "trading-keys/**",
+      "**/private-key*"
+    ],
+    "writeAllow": [
+      "backtest-results/**",
+      "strategy-reports/**"
+    ],
+    "writeDeny": [
+      "customer-accounts/**",
+      "trading-keys/**",
+      "production/**",
+      "**/credentials*",
+      "**/.env*",
+      "orders/**",
+      "executions/**"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_market_data",
+      "run_backtest",
+      "generate_strategy_report"
+    ],
+    "denied": [
+      "execute_trade",
+      "place_order",
+      "cancel_order",
+      "access_customer_account",
+      "transfer_funds",
+      "modify_position"
+    ],
+    "bash": {
+      "allow": [
+        "python backtest*",
+        "python strategy_analyzer*",
+        "python -m pytest tests/backtest*",
+        "cat market-data/**"
+      ],
+      "deny": [
+        "curl *exchange-api*/order*",
+        "curl *exchange-api*/trade*",
+        "curl *broker-api*/execute*",
+        "curl * -X POST *exchange*",
+        "curl * -X PUT *exchange*",
+        "curl * -X DELETE *exchange*",
+        "rm -rf *",
+        "sudo *",
+        "eval *",
+        "psql *production*",
+        "mysql *production*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "agentId": "infra-provisioner",
+  "version": "1.0.0",
+  "description": "Infrastructure provisioning agent scoped to UAT environments. Can read Terraform configs and state, run plans and applies for UAT only. Strictly prohibited from deploying to production or accessing production credentials.",
+  "complianceFrameworks": ["soc2", "iso27001", "nist-800-53"],
+  "identity": {
+    "role": "InfrastructureEngineer",
+    "allowedPersonas": ["infra-provisioner"],
+    "authorityLevel": "deploy-uat-only",
+    "environmentScope": ["development", "uat"],
+    "dataClassification": "internal"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "infrastructure/terraform/**",
+      "infrastructure/configs/**",
+      "infrastructure/modules/**",
+      "infrastructure/state/uat/**",
+      "infrastructure/plans/**",
+      "deploy/uat/**",
+      "monitoring/dashboards/**"
+    ],
+    "readDeny": [
+      "infrastructure/state/prod/**",
+      "production/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*",
+      "**/api-key*",
+      "**/password*",
+      "**/private-key*",
+      "**/service-account-key*",
+      "deploy/prod/**"
+    ],
+    "writeAllow": [
+      "infrastructure/plans/uat/**",
+      "infrastructure/configs/uat/**",
+      "deploy/uat/**"
+    ],
+    "writeDeny": [
+      "production/**",
+      "deploy/prod/**",
+      "infrastructure/state/prod/**",
+      "**/credentials*",
+      "**/.env*",
+      "**/secrets*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "terraform_plan",
+      "terraform_apply_uat",
+      "read_config",
+      "validate_template"
+    ],
+    "denied": [
+      "terraform_apply_prod",
+      "kubectl_prod",
+      "delete_resource_prod"
+    ],
+    "bash": {
+      "allow": [
+        "terraform plan *",
+        "terraform validate *",
+        "terraform fmt *",
+        "terraform apply *-uat*",
+        "terraform apply *uat-*",
+        "kubectl apply * --context *uat*",
+        "kubectl get * --context *uat*",
+        "kubectl describe * --context *uat*",
+        "cat infrastructure/**"
+      ],
+      "deny": [
+        "terraform apply *-prod*",
+        "terraform apply *prod-*",
+        "terraform apply *production*",
+        "terraform destroy *",
+        "kubectl * --context *prod*",
+        "kubectl * --context *production*",
+        "kubectl delete *",
+        "gcloud * --project *prod*",
+        "aws * --profile prod*",
+        "rm -rf *",
+        "sudo *",
+        "eval *"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 10,
+      "throttle": 15,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "agentId": "deploy-agent",
+  "version": "1.0.0",
+  "description": "Agent with deployment permissions for UAT/staging environments. Can read deploy configs and execute deployment commands. Used in UC-48 (cross-agent supply chain attack) and UC-50 (compliant parts, non-compliant whole).",
+  "complianceFrameworks": ["soc2", "nist-csf"],
+  "identity": {
+    "role": "DeploymentEngineer",
+    "allowedPersonas": ["deploy-agent"],
+    "authorityLevel": "deploy-uat",
+    "environmentScope": ["uat", "staging"],
+    "dataClassification": "internal",
+    "teamId": "platform-alpha"
+  },
+  "dataAccess": {
+    "readAllow": [
+      "deploy/**",
+      "configs/deploy/**",
+      "configs/uat/**",
+      "configs/staging/**",
+      "infrastructure/uat/**",
+      "build-artifacts/**",
+      "docs/runbooks/**"
+    ],
+    "readDeny": [
+      "configs/prod/**",
+      "infrastructure/prod/**",
+      "data/customers/**",
+      "data/financial/**",
+      "data/pii/**",
+      "**/.env.prod*",
+      "**/prod-credentials*",
+      "**/secrets*",
+      "soe-definitions/**"
+    ],
+    "writeAllow": [
+      "deploy/uat/**",
+      "deploy/staging/**",
+      "configs/uat/**",
+      "configs/staging/**",
+      "logs/deploy/**"
+    ],
+    "writeDeny": [
+      "deploy/prod/**",
+      "configs/prod/**",
+      "infrastructure/prod/**",
+      "data/customers/**",
+      "data/financial/**",
+      "soe-definitions/**",
+      "**/.env*"
+    ]
+  },
+  "toolActions": {
+    "allowed": [
+      "read_file",
+      "write_file",
+      "deploy_uat",
+      "deploy_staging",
+      "run_smoke_tests"
+    ],
+    "denied": [
+      "deploy_production",
+      "modify_soe",
+      "access_customer_data",
+      "modify_production_config"
+    ],
+    "bash": {
+      "allow": [
+        "kubectl apply -f deploy/uat/**",
+        "kubectl apply -f deploy/staging/**",
+        "docker build *",
+        "docker push *-uat*",
+        "docker push *-staging*",
+        "helm upgrade * --namespace uat*",
+        "helm upgrade * --namespace staging*",
+        "cat deploy/**",
+        "cat configs/deploy/**"
+      ],
+      "deny": [
+        "kubectl apply -f deploy/prod/**",
+        "kubectl * --namespace prod*",
+        "docker push *-prod*",
+        "helm upgrade * --namespace prod*",
+        "sudo *",
+        "rm -rf *",
+        "eval *",
+        "curl * -d @data/**",
+        "psql *prod*",
+        "mysql *prod*"
+      ]
+    }
+  },
+  "riskBudget": {
+    "maxPerSession": 20,
+    "thresholds": {
+      "warn": 8,
+      "throttle": 14,
+      "critical": 18,
+      "exhausted": 20
+    }
+  }
+}
