@@ -189,4 +189,4 @@ Found an issue or want to add a new industry theme? Open a pull request or [file
 
 ---
 
-Built with [Sentinel-Ops](https://ethicalzen.ai) — the agent compliance platform from [EthicalZen.ai](https://ethicalzen.ai)
+Built with [Sentinel-Ops]([https://ethicalzen.ai](https://yadriworks.ai) — the agent compliance platform from https://yadriworks.ai
