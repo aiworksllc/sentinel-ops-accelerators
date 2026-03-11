@@ -8,9 +8,9 @@
 
 ## What is Sentinel-Ops?
 
-Sentinel-Ops is the agent compliance platform from [EthicalZen.ai](https://ethicalzen.ai). It enforces a **Safe Operating Envelope (SOE)** around AI agents. Every tool call an agent makes is evaluated against three constraints:
+Sentinel-Ops is the agent compliance platform from Yadriworks.ai (https://yadriworks.ai/docs) . It enforces a **Safe Operating Envelope (SOE)** around AI agents. Every tool call an agent makes is evaluated against three constraints:
 
-> **Availability:** Sentinel-Ops is in **limited beta for early adopters in Q1 2026** on **AWS** (ECS Fargate, CloudFormation). Azure and GCP support planned for Q2 2026. [Request early access](mailto:support@ethicalzen.ai).
+> **Availability:** Sentinel-Ops is in **limited beta for early adopters in Q1 2026** on **AWS** (ECS Fargate, CloudFormation). Azure and GCP support planned for Q2 2026. [Request early access]).
 
 1. **Identity** — Who the agent is, what role it claims, what authority level it has
 2. **Data Access** — What files/data the agent can read and write (glob patterns)
